@@ -68,36 +68,51 @@ function sendMessage(event) {
 
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
-
     var messageElement = document.createElement('li');
 
-    if(message.type === 'JOIN') {
+    // JOIN/LEAVE messages remain the same
+    if (message.type === 'JOIN') {
         messageElement.classList.add('event-message');
         message.content = message.sender + ' joined!';
+        var eventText = document.createElement('p');
+        eventText.textContent = message.content;
+        messageElement.appendChild(eventText);
+
     } else if (message.type === 'LEAVE') {
         messageElement.classList.add('event-message');
         message.content = message.sender + ' left!';
-    } else {
-        messageElement.classList.add('chat-message');
+        var eventText = document.createElement('p');
+        eventText.textContent = message.content;
+        messageElement.appendChild(eventText);
+
+    } else if (message.type === 'CHAT') {
+        if (message.sender === username) {
+            messageElement.classList.add('chat-message', 'self');
+        } else {
+            messageElement.classList.add('chat-message', 'other');
+        }
 
         var avatarElement = document.createElement('i');
-        var avatarText = document.createTextNode(message.sender[0]);
-        avatarElement.appendChild(avatarText);
+        avatarElement.textContent = message.sender[0].toUpperCase();
         avatarElement.style['background-color'] = getAvatarColor(message.sender);
 
+        var detailsWrapper = document.createElement('div');
+        detailsWrapper.classList.add('message-details');
+
+        var senderName = document.createElement('span');
+        senderName.classList.add('sender-name');
+        senderName.textContent = message.sender;
+
+        var bubbleElement = document.createElement('div');
+        bubbleElement.classList.add('bubble');
+        bubbleElement.textContent = message.content;
+
+        detailsWrapper.appendChild(senderName);
+        detailsWrapper.appendChild(bubbleElement);
+
         messageElement.appendChild(avatarElement);
-
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
-        usernameElement.appendChild(usernameText);
-        messageElement.appendChild(usernameElement);
+        messageElement.appendChild(detailsWrapper);
     }
-
-    var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
-
-    messageElement.appendChild(textElement);
 
     messageArea.appendChild(messageElement);
     messageArea.scrollTop = messageArea.scrollHeight;
